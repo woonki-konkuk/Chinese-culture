@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e6e6e6">
+<title>중국 문화 어휘 평가</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600&family=Noto+Serif+KR:wght@400;700&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#e6e6e6;      /* 워드 인쇄 모양의 회색 바탕 */
+    --paper:#ffffff;
+    --ink:#111111;
+    --ink-2:#3a3a3a;
+    --muted:#707070;
+    --grid:#8a8a8a;        /* 표 테두리 */
+    --grid-2:#cfcfcf;
+    --shade:#efefef;       /* 표 머리칸 음영 */
+    --hover:#f6f6f6;
+    --ok:#1f3a93;          /* 정답: 청색 */
+    --ng:#b3261e;          /* 오답 · 채점 표시: 적색 */
+    --serif:"Noto Serif KR","AppleMyungjo","Batang",serif;
+    --serif-zh:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+    --latin:"Noto Serif","Times New Roman",serif;
+    --sans:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{
+    background:var(--canvas);color:var(--ink);
+    font-family:var(--serif);font-size:15px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .hidden{display:none !important;}
+  .zh{font-family:var(--serif-zh);}
+  .py{font-family:var(--latin);}
+  .ko{font-family:var(--serif);}
+  sup.star{font-family:var(--latin);font-size:.72em;color:var(--ink-2);margin-left:1px;}
+
+  /* ---------- 종이 한 장 ---------- */
+  .sheet{
+    width:min(794px, calc(100% - 32px));
+    margin:24px auto;
+    min-height:1123px;                      /* A4 비율 */
+    background:var(--paper);
+    box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.14);
+    padding:56px 72px 28px;
+    display:flex;flex-direction:column;
+  }
+  .page-head,.page-foot{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    font-family:var(--sans);font-size:11px;color:var(--muted);
+  }
+  .page-head{border-bottom:1px solid var(--grid-2);padding-bottom:6px;margin-bottom:34px;}
+  .page-foot{border-top:1px solid var(--grid-2);padding-top:6px;margin-top:auto;}
+  .page-body{padding-bottom:36px;}
+  .home{
+    border:none;background:none;padding:0;font:inherit;color:var(--ink-2);cursor:pointer;
+    text-decoration:underline;text-underline-offset:2px;
+  }
+
+  /* ---------- 제목 · 소제목 ---------- */
+  .title{font-family:var(--serif);font-weight:700;font-size:25px;letter-spacing:.08em;text-align:center;margin:0 0 6px;}
+  .title.small{font-size:21px;letter-spacing:.06em;}
+  .subtitle{text-align:center;color:var(--ink-2);margin:0 0 22px;font-size:14px;}
+  .h{font-family:var(--serif);font-size:15.5px;font-weight:700;margin:28px 0 10px;}
+  .h .hn{margin-right:4px;}
+  .h small{font-weight:400;color:var(--muted);font-size:13px;margin-left:2px;}
+  .footnote{font-size:12.5px;color:var(--ink-2);margin:14px 0 0;line-height:1.6;}
+
+  /* ---------- 표 (워드 표 눈금) ---------- */
+  table.grid{border-collapse:collapse;width:100%;}
+  table.grid th,table.grid td{border:1px solid var(--grid);padding:6px 9px;}
+  table.grid th{background:var(--shade);font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink-2);text-align:center;white-space:nowrap;}
+  table.info th{width:14%;}
+  table.info td{font-size:14px;width:36%;}
+  table.words{table-layout:fixed;}
+  table.words col.c-n{width:8%;} table.words col.c-zh{width:24%;}
+  table.words col.c-py{width:30%;} table.words col.c-ko{width:38%;}
+  table.words td{font-size:14.5px;vertical-align:middle;overflow-wrap:anywhere;}
+  table.words td.n{text-align:center;font-family:var(--latin);font-size:12.5px;color:var(--ink-2);}
+  table.words td.zh{font-size:18px;white-space:nowrap;}
+  table.words td.py{font-size:14.5px;}
+  table.score td{text-align:center;font-family:var(--latin);font-size:20px;font-weight:600;padding:9px 6px;}
+  table.score td.okc{color:var(--ok);}
+  table.score td.ngc{color:var(--ng);}
+
+  /* ---------- 선택지 (서식 칸 + 네모 칸) ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--grid);border-left:1px solid var(--grid);}
+  .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+  .opt{
+    display:flex;align-items:center;gap:9px;text-align:left;cursor:pointer;
+    background:var(--paper);border:none;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid);
+    padding:9px 11px;font-family:var(--serif);font-size:14.5px;color:var(--ink);
+  }
+  .opt::before{
+    content:"";flex:0 0 13px;width:13px;height:13px;border:1.2px solid var(--ink);background:var(--paper);
+  }
+  .opt .lbl{flex:1;}
+  .opt .cnt{font-family:var(--sans);font-size:12px;color:var(--muted);}
+  .opt small{font-size:12.5px;color:var(--muted);}
+  .opt:hover{background:var(--hover);}
+  .opt.active{font-weight:700;}
+  .opt.active::before{
+    background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 6.3l2.4 2.4 5.2-5.4' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E") center/11px no-repeat;
+  }
+  .opt.wide{grid-column:1 / -1;}
+
+  /* ---------- 단추 ---------- */
+  .actions{display:flex;gap:8px;margin-top:26px;}
+  .actions .btn{flex:1;}
+  .btn{
+    font-family:var(--sans);font-size:14.5px;font-weight:600;cursor:pointer;
+    padding:11px 12px;border:1px solid var(--ink);border-radius:2px;background:var(--paper);color:var(--ink);
+  }
+  .btn:hover{background:var(--hover);}
+  .btn.primary{background:var(--ink);color:#fff;}
+  .btn.primary:hover{background:#333;}
+  .btn:active{transform:translateY(1px);}
+  .opt:focus-visible,.btn:focus-visible,.ans:focus-visible,.home:focus-visible{outline:2px solid var(--ok);outline-offset:2px;}
+
+  /* ---------- 평가지 ---------- */
+  .q-status{display:flex;justify-content:space-between;font-family:var(--sans);font-size:12.5px;color:var(--ink-2);margin-bottom:6px;}
+  .progress{height:2px;background:var(--grid-2);}
+  .progress > i{display:block;height:100%;width:0;background:var(--ink);transition:width .3s ease;}
+  .q-stem{font-size:16.5px;font-weight:600;margin:26px 0 14px;line-height:1.55;}
+  .q-no{position:relative;display:inline-block;min-width:1.3em;font-weight:700;}
+  .q-no.ok::after{               /* 빨간 펜 동그라미 */
+    content:"";position:absolute;left:42%;top:52%;width:2.1em;height:2.1em;
+    border:2px solid var(--ng);border-radius:50%;transform:translate(-50%,-50%) rotate(-10deg);opacity:.85;
+  }
+  .q-no.ng::after{               /* 빨간 펜 빗금 */
+    content:"";position:absolute;left:-.3em;top:50%;width:1.9em;height:2px;background:var(--ng);
+    transform:rotate(-58deg);opacity:.85;
+  }
+  .q-box{border:1px solid var(--ink);padding:22px 14px;text-align:center;margin:0 0 14px;}
+  .q-prompt{font-size:44px;line-height:1.25;overflow-wrap:anywhere;}
+  .q-prompt.zh{font-weight:600;}
+  .q-prompt.py{font-size:32px;}
+  .q-prompt.ko{font-size:25px;font-weight:600;word-break:keep-all;}
+  .q-prompt.long{font-size:32px;}
+  .q-prompt.py.long{font-size:26px;}
+  .answers{list-style:none;margin:0;padding:0;}
+  .ans{
+    width:100%;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
+    background:none;border:none;border-bottom:1px dotted var(--grid-2);
+    padding:11px 6px;font:inherit;color:var(--ink);
+  }
+  .ans:hover:not(.disabled){background:var(--hover);}
+  .ans .mk{                      /* 답안 번호 칸 (고르면 칠해짐) */
+    flex:0 0 auto;width:23px;height:23px;border:1.2px solid currentColor;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:var(--latin);font-size:13px;line-height:1;
+  }
+  .ans .txt{flex:1;min-width:0;font-size:17px;overflow-wrap:anywhere;}
+  .ans .txt.zh{font-size:22px;}
+  .ans .txt.py{font-size:18px;}
+  .ans .tag{font-family:var(--sans);font-size:11.5px;font-weight:700;border:1px solid currentColor;padding:1px 6px;letter-spacing:.04em;}
+  .ans .tag:empty{display:none;}
+  .ans.picked .mk{background:currentColor;}
+  .ans.picked .mk span{color:#fff;}
+  .ans.disabled{cursor:default;}
+  .ans.disabled:not(.correct):not(.wrong){color:var(--muted);}
+  .ans.correct{color:var(--ok);}
+  .ans.correct .txt{font-weight:600;}
+  .ans.wrong{color:var(--ng);}
+  .ans.wrong .txt{text-decoration:line-through;text-decoration-thickness:1px;}
+  .explain{margin-top:16px;border:1px solid var(--grid);background:#fafafa;padding:10px 14px;}
+  .explain-h{margin:0 0 3px;font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--ink-2);}
+  .explain p{margin:0;}
+  #qSub{font-size:15.5px;}
+  #qSub .zh{font-size:18px;}
+
+  /* ---------- 채점 결과 ---------- */
+  .remark{margin:12px 0 0;font-size:15px;}
+  .remark b{font-family:var(--sans);font-size:12.5px;margin-right:8px;}
+
+  /* ---------- 화면 폭이 좁을 때 ---------- */
+  @media (max-width:700px){
+    body{font-size:14.5px;}
+    .sheet{width:calc(100% - 14px);margin:7px auto;min-height:calc(100vh - 14px);min-height:calc(100dvh - 14px);padding:22px 18px 14px;}
+    .page-head{margin-bottom:24px;}
+    .title{font-size:21px;letter-spacing:.05em;}
+    .title.small{font-size:19px;}
+    table.grid th,table.grid td{padding:6px 6px;}
+    table.words td{font-size:13.5px;}
+    table.words col.c-n{width:10%;} table.words col.c-zh{width:26%;}
+    table.words col.c-py{width:30%;} table.words col.c-ko{width:34%;}
+    table.words td.zh{font-size:16px;white-space:normal;}
+    table.words td.py{font-size:13.5px;}
+    .opt{padding:9px 9px;font-size:14px;}
+    .q-prompt{font-size:40px;}
+  }
+  /* 아이폰 미니 같은 작은 휴대폰: 글씨는 그대로 두고 여백만 줄여 한 화면에 들어오게 */
+  @media (max-width:420px){
+    .sheet{width:calc(100% - 12px);margin:6px auto;padding:16px 16px 12px;}
+    .page-head{font-size:11.5px;margin-bottom:14px;}
+    .page-foot{font-size:11.5px;}
+    .page-body{padding-bottom:16px;}
+    .title{margin-bottom:12px;}
+    #startScreen .subtitle{display:none;}
+    table.info th,table.info td{padding:5px 7px;}
+    table.info tr.info-2{display:none;}
+    .h{margin:17px 0 8px;}
+    .opt{padding:8px 9px;}
+    .actions{margin-top:16px;}
+    table.words td{font-size:14.5px;}
+    table.words td.py{font-size:14.5px;}
+    table.words td.zh{font-size:17px;}
+    .q-stem{margin:12px 0 9px;}
+    .q-box{padding:12px 10px;margin-bottom:8px;}
+    .ans{padding:9px 4px;}
+    .explain{margin-top:10px;padding:8px 12px;}
+    #quizScreen .actions{margin-top:12px;}
+  }
+  @media (max-width:340px){
+    .form-grid.three .opt{padding:8px 7px;gap:6px;}
+  }
+
+  /* ---------- 인쇄 (어휘 목록을 종이로 뽑을 때) ---------- */
+  @media print{
+    body{background:#fff;}
+    .sheet{width:auto;margin:0;min-height:0;box-shadow:none;padding:0;}
+    .actions,.home{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="page-head">
+    <span>「중국 문화」 본문 중국어 어휘 평가</span>
+    <span><span id="headRight">평가 설정</span><button class="home hidden" id="homeBtn">처음 화면으로</button></span>
+  </div>
+
+  <div class="page-body">
+
+  <!-- ===== 평가 설정 ===== -->
+  <section id="startScreen">
+    <h1 class="title">본문 중국어 어휘 평가</h1>
+    <p class="subtitle">「중국 문화」 교과서 제1과 · 제2과</p>
+
+    <table class="grid info">
+      <tr><th>과목</th><td>중국 문화</td><th>어휘 수</th><td><span id="infoTotal">0</span>개</td></tr>
+      <tr class="info-2"><th>범위</th><td>제1 · 2과 본문</td><th>형식</th><td>4지선다</td></tr>
+    </table>
+
+    <h2 class="h"><span class="hn">1.</span>출제 범위</h2>
+    <div class="form-grid" id="catOpts"></div>
+
+    <h2 class="h"><span class="hn">2.</span>출제 방식</h2>
+    <div class="form-grid" id="modeOpts">
+      <button class="opt active" data-mode="h2k"><span class="lbl">한자 → 뜻</span></button>
+      <button class="opt" data-mode="k2h"><span class="lbl">뜻 → 한자</span></button>
+      <button class="opt" data-mode="p2k"><span class="lbl">병음 → 뜻</span></button>
+      <button class="opt" data-mode="h2p"><span class="lbl">한자 → 병음</span></button>
+      <button class="opt wide" data-mode="mix"><span class="lbl">혼합 <small>(위의 네 방식을 무작위로 출제)</small></span></button>
+    </div>
+
+    <h2 class="h"><span class="hn">3.</span>문항 수</h2>
+    <div class="form-grid three" id="countOpts">
+      <button class="opt" data-count="10"><span class="lbl">10문항</span></button>
+      <button class="opt active" data-count="20"><span class="lbl">20문항</span></button>
+      <button class="opt" data-count="all"><span class="lbl">전체</span></button>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="listBtn">어휘 목록 보기</button>
+      <button class="btn primary" id="startBtn">평가 시작</button>
+    </div>
+    <p class="footnote legend hidden"><sup class="star">*</sup> 교과서에 표기가 없어 사전에 따라 보충한 부분입니다. 한자만 인쇄된 어휘에는 병음을, 병음만 인쇄된 어휘에는 한자를 보충하였습니다.</p>
+  </section>
+
+  <!-- ===== 평가지 ===== -->
+  <section id="quizScreen" class="hidden">
+    <div class="q-status"><span>문항 <span id="qCounter">1 / 20</span></span><span>정답 수 <span id="qScore">0</span></span></div>
+    <div class="progress"><i id="qBar"></i></div>
+
+    <p class="q-stem"><span class="q-no" id="qNo">1.</span> <span id="qTag"></span></p>
+    <div class="q-box"><div class="q-prompt" id="qPrompt"></div></div>
+    <ol class="answers" id="answers"></ol>
+
+    <div class="explain hidden" id="explain">
+      <p class="explain-h">[해설]</p>
+      <p id="qSub"></p>
+    </div>
+    <div class="actions"><button class="btn primary hidden" id="nextBtn">다음 문항</button></div>
+  </section>
+
+  <!-- ===== 채점 결과 ===== -->
+  <section id="resultScreen" class="hidden">
+    <h1 class="title small">채점 결과</h1>
+    <p class="subtitle" id="rScope"></p>
+    <table class="grid score">
+      <thead><tr><th>총 문항</th><th>정답</th><th>오답</th><th>정답률</th></tr></thead>
+      <tbody><tr><td id="rTotal">0</td><td class="okc" id="rOk">0</td><td class="ngc" id="rNo">0</td><td id="rPct">0%</td></tr></tbody>
+    </table>
+    <p class="remark"><b>총평</b><span id="rMsg"></span></p>
+
+    <div id="reviewBox">
+      <h2 class="h"><span class="hn">■</span>오답 어휘</h2>
+      <table class="grid words">
+        <colgroup><col class="c-n"><col class="c-zh"><col class="c-py"><col class="c-ko"></colgroup>
+        <thead><tr><th>번호</th><th>간화자</th><th>한어병음</th><th>뜻</th></tr></thead>
+        <tbody id="reviewList"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="againBtn">설정 변경</button>
+      <button class="btn hidden" id="wrongBtn">오답만 다시</button>
+      <button class="btn primary" id="retryBtn">다시 응시</button>
+    </div>
+  </section>
+
+  <!-- ===== 어휘 목록 ===== -->
+  <section id="listScreen" class="hidden">
+    <h1 class="title small">어휘 목록</h1>
+    <p class="subtitle">교과서에 나온 순서대로 단원별로 정리하였습니다. (총 <span id="listTotal">0</span>개)</p>
+    <div id="wordList"></div>
+    <p class="footnote legend hidden"><sup class="star">*</sup> 교과서에 표기가 없어 사전에 따라 보충한 부분입니다. 한자만 인쇄된 어휘에는 병음을, 병음만 인쇄된 어휘에는 한자를 보충하였습니다.</p>
+    <div class="actions"><button class="btn primary" id="listToQuizBtn">평가 설정으로</button></div>
+  </section>
+
+  </div>
+
+  <div class="page-foot">
+    <span>엄마가 만들어 준 단어장</span>
+    <span id="pageNo">- 1 -</span>
+  </div>
+</div>
+
+<script>
+/* 「중국 문화」 교과서 사진에서 뽑은 어휘
+   added: "pinyin" = 교과서엔 한자만 있어 병음을 붙임, "hanzi" = 병음만 있어 한자를 붙임 */
+const WORDS = [
+  {"num": 1, "hanzi": "中学", "pinyin": "zhōngxué", "korean": "중등학교(중·고교 과정)", "cat": "학제·입시"},
+  {"num": 2, "hanzi": "初级中学", "pinyin": "chūjí zhōngxué", "korean": "초급 중학(중학교)", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 3, "hanzi": "高级中学", "pinyin": "gāojí zhōngxué", "korean": "고급 중학(고등학교)", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 4, "hanzi": "幼儿园", "pinyin": "yòu'éryuán", "korean": "유치원", "cat": "학제·입시"},
+  {"num": 5, "hanzi": "小学", "pinyin": "xiǎoxué", "korean": "초등학교", "cat": "학제·입시"},
+  {"num": 6, "hanzi": "初中", "pinyin": "chūzhōng", "korean": "중학교", "cat": "학제·입시"},
+  {"num": 7, "hanzi": "高中", "pinyin": "gāozhōng", "korean": "고등학교", "cat": "학제·입시"},
+  {"num": 8, "hanzi": "大学", "pinyin": "dàxué", "korean": "대학교(4년제)", "cat": "학제·입시"},
+  {"num": 9, "hanzi": "大专", "pinyin": "dàzhuān", "korean": "2년제 대학(전문대)", "cat": "학제·입시"},
+  {"num": 10, "hanzi": "中考", "pinyin": "zhōngkǎo", "korean": "중카오(고교 입학시험)", "cat": "학제·입시"},
+  {"num": 11, "hanzi": "高考", "pinyin": "gāokǎo", "korean": "가오카오(대학 입학시험)", "cat": "학제·입시"},
+  {"num": 12, "hanzi": "考试时间", "pinyin": "kǎoshì shíjiān", "korean": "시험 시간", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 13, "hanzi": "时间", "pinyin": "shíjiān", "korean": "시간", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 14, "hanzi": "科目", "pinyin": "kēmù", "korean": "과목", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 15, "hanzi": "语文", "pinyin": "yǔwén", "korean": "어문(국어)", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 16, "hanzi": "数学", "pinyin": "shùxué", "korean": "수학", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 17, "hanzi": "物理", "pinyin": "wùlǐ", "korean": "물리", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 18, "hanzi": "历史", "pinyin": "lìshǐ", "korean": "역사", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 19, "hanzi": "外语", "pinyin": "wàiyǔ", "korean": "외국어", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 20, "hanzi": "化学", "pinyin": "huàxué", "korean": "화학", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 21, "hanzi": "地理", "pinyin": "dìlǐ", "korean": "지리", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 22, "hanzi": "思想政治", "pinyin": "sīxiǎng zhèngzhì", "korean": "사상정치(정치 과목)", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 23, "hanzi": "物理学", "pinyin": "wùlǐxué", "korean": "물리학", "cat": "학제·입시", "added": "pinyin"},
+  {"num": 24, "hanzi": "旗", "pinyin": "qí", "korean": "깃발(치파오의 '치')", "cat": "학교생활"},
+  {"num": 25, "hanzi": "旗开得胜", "pinyin": "qíkāidéshèng", "korean": "깃발을 펼치자마자 승리함(성어)", "cat": "학교생활"},
+  {"num": 26, "hanzi": "粽子", "pinyin": "zòngzi", "korean": "쫑즈(대나무 잎에 싼 찹쌀밥)", "cat": "학교생활"},
+  {"num": 27, "hanzi": "中", "pinyin": "zhòng", "korean": "중(합격의 의미)", "cat": "학교생활"},
+  {"num": 28, "hanzi": "早读", "pinyin": "zǎodú", "korean": "아침 책 읽기", "cat": "학교생활"},
+  {"num": 29, "hanzi": "课间操", "pinyin": "kèjiāncāo", "korean": "중간 체조(쉬는 시간 체조)", "cat": "학교생활"},
+  {"num": 30, "hanzi": "眼保健操", "pinyin": "yǎn bǎojiàncāo", "korean": "눈 체조", "cat": "학교생활"},
+  {"num": 31, "hanzi": "月饼", "pinyin": "yuèbing", "korean": "월병", "cat": "학교생활", "added": "pinyin"},
+  {"num": 32, "hanzi": "起立", "pinyin": "qǐlì", "korean": "차렷(일어서)", "cat": "교실 회화"},
+  {"num": 33, "hanzi": "敬礼", "pinyin": "jìnglǐ", "korean": "경례", "cat": "교실 회화"},
+  {"num": 34, "hanzi": "老师", "pinyin": "lǎoshī", "korean": "선생님", "cat": "교실 회화"},
+  {"num": 35, "hanzi": "好", "pinyin": "hǎo", "korean": "좋다, 안녕", "cat": "교실 회화"},
+  {"num": 36, "hanzi": "同学", "pinyin": "tóngxué", "korean": "급우, 학우", "cat": "교실 회화"},
+  {"num": 37, "hanzi": "们", "pinyin": "men", "korean": "~들(복수)", "cat": "교실 회화"},
+  {"num": 38, "hanzi": "老师好", "pinyin": "lǎoshī hǎo", "korean": "선생님, 안녕하세요", "cat": "교실 회화"},
+  {"num": 39, "hanzi": "同学们好", "pinyin": "tóngxuémen hǎo", "korean": "학생 여러분, 안녕하세요", "cat": "교실 회화"},
+  {"num": 40, "hanzi": "大家好", "pinyin": "dàjiā hǎo", "korean": "여러분, 안녕하세요", "cat": "교실 회화", "added": "hanzi"},
+  {"num": 41, "hanzi": "早上好", "pinyin": "zǎoshang hǎo", "korean": "좋은 아침(아침 인사)", "cat": "교실 회화", "added": "hanzi"},
+  {"num": 42, "hanzi": "上课", "pinyin": "shàngkè", "korean": "수업을 시작하다", "cat": "교실 회화"},
+  {"num": 43, "hanzi": "打开", "pinyin": "dǎkāi", "korean": "열다, 펴다", "cat": "교실 회화"},
+  {"num": 44, "hanzi": "页", "pinyin": "yè", "korean": "쪽, 페이지", "cat": "교실 회화"},
+  {"num": 45, "hanzi": "念", "pinyin": "niàn", "korean": "(소리 내어) 읽다", "cat": "교실 회화"},
+  {"num": 46, "hanzi": "下课", "pinyin": "xiàkè", "korean": "수업을 마치다", "cat": "교실 회화"},
+  {"num": 47, "hanzi": "放风筝", "pinyin": "fàng fēngzheng", "korean": "연날리기", "cat": "놀이·여가"},
+  {"num": 48, "hanzi": "登高", "pinyin": "dēnggāo", "korean": "등고(높은 곳에 오름)", "cat": "놀이·여가"},
+  {"num": 49, "hanzi": "潍坊世界风筝会", "pinyin": "Wéifāng Shìjiè Fēngzhenghuì", "korean": "웨이팡 국제 연날리기 대회", "cat": "놀이·여가", "added": "pinyin"},
+  {"num": 50, "hanzi": "蹴鞠", "pinyin": "cùjú", "korean": "축국(옛 공차기 놀이)", "cat": "놀이·여가"},
+  {"num": 51, "hanzi": "荡秋千", "pinyin": "dàngqiūqiān", "korean": "그네뛰기", "cat": "놀이·여가"},
+  {"num": 52, "hanzi": "秋千", "pinyin": "qiūqiān", "korean": "그네", "cat": "놀이·여가"},
+  {"num": 53, "hanzi": "射柳", "pinyin": "shèliǔ", "korean": "사류(버들가지 활쏘기)", "cat": "놀이·여가"},
+  {"num": 54, "hanzi": "掷色子", "pinyin": "zhìshǎizi", "korean": "주사위 놀이", "cat": "놀이·여가"},
+  {"num": 55, "hanzi": "七巧", "pinyin": "qīqiǎo", "korean": "칠교놀이", "cat": "놀이·여가"},
+  {"num": 56, "hanzi": "八角巾", "pinyin": "bājiǎojīn", "korean": "팔각건(팔각 수건 돌리기)", "cat": "놀이·여가"},
+  {"num": 57, "hanzi": "太极拳", "pinyin": "tàijíquán", "korean": "태극권", "cat": "놀이·여가"},
+  {"num": 58, "hanzi": "空竹", "pinyin": "kōngzhú", "korean": "공죽(죽방울)", "cat": "놀이·여가"},
+  {"num": 59, "hanzi": "踢毽子", "pinyin": "tī jiànzi", "korean": "제기차기", "cat": "놀이·여가"},
+  {"num": 60, "hanzi": "二胡", "pinyin": "èrhú", "korean": "얼후(두 줄 현악기)", "cat": "놀이·여가"},
+  {"num": 61, "hanzi": "广场舞", "pinyin": "guǎngchǎngwǔ", "korean": "광장무(광장에서 함께 추는 춤)", "cat": "놀이·여가"},
+  {"num": 62, "hanzi": "打麻将", "pinyin": "dǎ májiàng", "korean": "마작을 하다", "cat": "놀이·여가"},
+  {"num": 63, "hanzi": "地书", "pinyin": "dìshū", "korean": "바닥 서예(물 붓글씨)", "cat": "놀이·여가"},
+  {"num": 64, "hanzi": "围棋", "pinyin": "wéiqí", "korean": "바둑", "cat": "놀이·여가"},
+  {"num": 65, "hanzi": "象棋", "pinyin": "xiàngqí", "korean": "장기(중국 장기)", "cat": "놀이·여가"},
+  {"num": 66, "hanzi": "你", "pinyin": "nǐ", "korean": "너", "cat": "운동 회화"},
+  {"num": 67, "hanzi": "喜欢", "pinyin": "xǐhuan", "korean": "좋아하다", "cat": "운동 회화"},
+  {"num": 68, "hanzi": "什么", "pinyin": "shénme", "korean": "무슨, 무엇", "cat": "운동 회화"},
+  {"num": 69, "hanzi": "运动", "pinyin": "yùndòng", "korean": "운동", "cat": "운동 회화"},
+  {"num": 70, "hanzi": "我", "pinyin": "wǒ", "korean": "나", "cat": "운동 회화"},
+  {"num": 71, "hanzi": "踢", "pinyin": "tī", "korean": "(발로) 차다", "cat": "운동 회화"},
+  {"num": 72, "hanzi": "足球", "pinyin": "zúqiú", "korean": "축구", "cat": "운동 회화"},
+  {"num": 73, "hanzi": "呢", "pinyin": "ne", "korean": "~은/는(요)? (되묻는 말)", "cat": "운동 회화"},
+  {"num": 74, "hanzi": "打", "pinyin": "dǎ", "korean": "(운동을) 하다", "cat": "운동 회화"},
+  {"num": 75, "hanzi": "篮球", "pinyin": "lánqiú", "korean": "농구", "cat": "운동 회화"},
+  {"num": 76, "hanzi": "棒球", "pinyin": "bàngqiú", "korean": "야구", "cat": "운동 회화", "added": "hanzi"},
+  {"num": 77, "hanzi": "滑雪", "pinyin": "huáxuě", "korean": "스키", "cat": "운동 회화"},
+  {"num": 78, "hanzi": "排球", "pinyin": "páiqiú", "korean": "배구", "cat": "운동 회화"},
+  {"num": 79, "hanzi": "柔道", "pinyin": "róudào", "korean": "유도", "cat": "운동 회화"},
+  {"num": 80, "hanzi": "马术", "pinyin": "mǎshù", "korean": "승마술, 기마술", "cat": "운동 회화"},
+  {"num": 81, "hanzi": "洋弓", "pinyin": "yánggōng", "korean": "양궁", "cat": "운동 회화"}
+];
+
+// ---------- 범위(단원) ----------
+const CATS = [...new Set(WORDS.map(w=>w.cat))];
+const ORD = ['가','나','다','라','마','바','사','아','자','차','카','타'];
+
+// ---------- 설정 상태 ----------
+const settings = { cat:"all", mode:"h2k", count:"20" };
+
+// ---------- 화면 요소 ----------
+const screens = {
+  start:  document.getElementById('startScreen'),
+  quiz:   document.getElementById('quizScreen'),
+  result: document.getElementById('resultScreen'),
+  list:   document.getElementById('listScreen')
+};
+const HEAD = { start:'평가 설정', quiz:'평가지', result:'채점 결과', list:'어휘 목록' };
+const homeBtn = document.getElementById('homeBtn');
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const STAR = '<sup class="star">*</sup>';
+function hzHtml(w){ return '<span class="zh" lang="zh-Hans">'+esc(w.hanzi)+'</span>'+(w.added==='hanzi'?STAR:''); }
+function pyHtml(w){ return '<span class="py">'+esc(w.pinyin)+'</span>'+(w.added==='pinyin'?STAR:''); }
+function koHtml(w){ return '<span class="ko">'+esc(w.korean)+'</span>'; }
+function catLabel(c){ return ORD[CATS.indexOf(c)]+'. '+c; }
+
+// ---------- 설정 화면 채우기 ----------
+(function initStart(){
+  document.getElementById('infoTotal').textContent = WORDS.length;
+  document.getElementById('listTotal').textContent = WORDS.length;
+  const box = document.getElementById('catOpts');
+  const wideAll = (CATS.length + 1) % 2 === 1;   // 칸 수가 홀수면 '전체'를 한 줄로
+  let html = '<button class="opt active'+(wideAll?' wide':'')+'" data-cat="all"><span class="lbl">전체</span><span class="cnt">'+WORDS.length+'개</span></button>';
+  CATS.forEach(c=>{
+    const n = WORDS.filter(w=>w.cat===c).length;
+    html += '<button class="opt" data-cat="'+esc(c)+'"><span class="lbl">'+esc(c)+'</span><span class="cnt">'+n+'개</span></button>';
+  });
+  box.innerHTML = html;
+  if(WORDS.some(w=>w.added)) document.querySelectorAll('.legend').forEach(el=>el.classList.remove('hidden'));
+})();
+
+// ---------- 선택 칸 ----------
+function bindOpts(containerId, key){
+  const opts = document.querySelectorAll('#'+containerId+' .opt');
+  opts.forEach(btn=>{
+    btn.setAttribute('aria-pressed', btn.classList.contains('active'));
+    btn.addEventListener('click', ()=>{
+      opts.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed','true');
+      settings[key] = btn.dataset[key];
+    });
+  });
+}
+bindOpts('catOpts','cat');
+bindOpts('modeOpts','mode');
+bindOpts('countOpts','count');
+
+// ---------- 유틸 ----------
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+// 병음 성조 제거 (비슷한 발음 찾기용)
+function plainPy(p){
+  return p.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+}
+// 뜻이 겹치는 보기 차단용 — 정답이 2개처럼 보이는 보기를 빼기
+// 예) 物理 '물리' ↔ 物理学 '물리학', 初中 '중학교' ↔ 初级中学 '초급 중학(중학교)'
+// 上课 '수업을 시작하다' ↔ 下课 '수업을 마치다'처럼 헷갈리지만 다른 뜻은 보기로 남김
+const KO_STOP = new Set(['하다','하기','놀이','성어','안녕하세요']);
+function koFull(s){ return s.replace(/[^가-힣A-Za-z0-9一-鿿]/g,''); }
+function koSegs(s){
+  return s.split(/[,;·\/()\[\]~—]+/).map(koFull).filter(t=>t.length>1 && !KO_STOP.has(t));
+}
+function meaningClash(a, b){
+  const fa = koFull(a), fb = koFull(b);
+  if(fa===fb) return true;
+  return koSegs(a).some(t=>fb.includes(t)) || koSegs(b).some(t=>fa.includes(t));
+}
+
+// ---------- 평가 상태 ----------
+let quiz = { list:[], idx:0, score:0, wrong:[], answered:false, scope:'' };
+
+function buildPool(){
+  let pool = WORDS;
+  if(settings.cat!=="all") pool = pool.filter(w=>w.cat===settings.cat);
+  return pool;
+}
+function scopeText(){
+  const cat = settings.cat==="all" ? '전체 범위' : catLabel(settings.cat);
+  const mode = {h2k:'한자 → 뜻', k2h:'뜻 → 한자', p2k:'병음 → 뜻', h2p:'한자 → 병음', mix:'혼합'}[settings.mode];
+  return cat+' · '+mode;
+}
+
+function show(name){
+  Object.entries(screens).forEach(([k,el])=>el.classList.toggle('hidden', k!==name));
+  document.getElementById('headRight').textContent = HEAD[name];
+  document.getElementById('headRight').classList.toggle('hidden', name!=='start');
+  homeBtn.classList.toggle('hidden', name==='start');
+  if(name!=='quiz') document.getElementById('pageNo').textContent = '- 1 -';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function beginQuiz(list, scope){
+  quiz = { list, idx:0, score:0, wrong:[], answered:false, scope };
+  show('quiz');
+  renderQuestion();
+}
+
+function startQuiz(){
+  const pool = shuffle(buildPool());
+  const n = settings.count==="all" ? pool.length : Math.min(parseInt(settings.count), pool.length);
+  beginQuiz(pool.slice(0, n), scopeText());
+}
+
+function startWrongQuiz(){
+  const seen = new Set();
+  const uniq = quiz.wrong.filter(w=>{ if(seen.has(w.num)) return false; seen.add(w.num); return true; });
+  if(uniq.length===0) return;
+  beginQuiz(shuffle(uniq), '오답 재응시 · '+quiz.scope);
+}
+
+// 문항 하나의 출제 방식
+function pickMode(){
+  if(settings.mode==="mix"){
+    const m = ["h2k","k2h","p2k","h2p"];
+    return m[Math.floor(Math.random()*m.length)];
+  }
+  return settings.mode;
+}
+
+// ---------- 그럴듯한 오답 고르기 ----------
+// 1) 정답과 뜻 · 한자 · 병음이 겹치는 어휘는 보기에서 제외 (정답이 2개가 되는 것 방지)
+// 2) 같은 단원, 한자가 겹치거나 발음이 비슷한 어휘를 우선으로 뽑아 변별력 높이기
+// 3) 점수에 무작위를 섞고 상위 후보 가운데 3개 → 풀 때마다 보기가 달라짐
+function pickDistractors(w, answerField, mode){
+  const wPy = plainPy(w.pinyin);
+  const cands = WORDS.filter(x=>
+    x.num!==w.num &&
+    x.hanzi!==w.hanzi &&
+    x.korean!==w.korean &&
+    plainPy(x.pinyin)!==wPy &&
+    !meaningClash(x.korean, w.korean)
+  );
+  const score = x=>{
+    let s = Math.random()*1.5;
+    if(x.cat===w.cat) s+=2;
+    if(answerField==="hanzi"){
+      if([...x.hanzi].some(ch=>w.hanzi.includes(ch))) s+=3;
+      if(x.hanzi.length===w.hanzi.length) s+=1;
+    }
+    if(answerField==="pinyin" || mode==="p2k"){
+      const xPy = plainPy(x.pinyin);
+      if(xPy[0]===wPy[0]) s+=1.5;
+      if(xPy.slice(0,2)===wPy.slice(0,2)) s+=1.5;
+      if(Math.abs(xPy.length-wPy.length)<=1) s+=1;
+    }
+    return s;
+  };
+  const sorted = cands.map(x=>({s:score(x),x})).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  return shuffle(sorted.slice(0,8)).slice(0,3);
+}
+
+const STEM = {
+  h2k:'다음 한자의 뜻으로 알맞은 것은?',
+  k2h:'다음 뜻을 나타내는 한자로 알맞은 것은?',
+  p2k:'다음 한어병음이 나타내는 뜻으로 알맞은 것은?',
+  h2p:'다음 한자의 한어병음으로 알맞은 것은?'
+};
+const FIELD = { h2k:['hanzi','korean'], k2h:['korean','hanzi'], p2k:['pinyin','korean'], h2p:['hanzi','pinyin'] };
+const CLS = { hanzi:'zh', pinyin:'py', korean:'ko' };
+
+function renderQuestion(){
+  quiz.answered = false;
+  const w = quiz.list[quiz.idx];
+  const mode = pickMode();
+  const [promptField, answerField] = FIELD[mode];
+  const total = quiz.list.length;
+
+  document.getElementById('qCounter').textContent = (quiz.idx+1)+' / '+total;
+  document.getElementById('qScore').textContent = quiz.score;
+  document.getElementById('qBar').style.width = Math.round((quiz.idx/total)*100)+'%';
+  document.getElementById('pageNo').textContent = '- '+(quiz.idx+1)+' -';
+
+  const noEl = document.getElementById('qNo');
+  noEl.textContent = (quiz.idx+1)+'.';
+  noEl.classList.remove('ok','ng');
+  document.getElementById('qTag').textContent = STEM[mode];
+
+  const promptEl = document.getElementById('qPrompt');
+  const ptxt = w[promptField];
+  promptEl.textContent = ptxt;
+  promptEl.className = 'q-prompt '+CLS[promptField];
+  if(promptField==='hanzi'){ promptEl.setAttribute('lang','zh-Hans'); } else { promptEl.removeAttribute('lang'); }
+  if((promptField==='hanzi' && ptxt.length>5) || (promptField==='pinyin' && ptxt.length>16)) promptEl.classList.add('long');
+
+  document.getElementById('explain').classList.add('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+
+  const choices = shuffle([w, ...pickDistractors(w, answerField, mode)]);
+  const ansBox = document.getElementById('answers');
+  ansBox.innerHTML = '';
+  choices.forEach((c, i)=>{
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'ans';
+    btn.dataset.num = c.num;
+    btn.innerHTML = '<span class="mk"><span>'+(i+1)+'</span></span>'
+                  + '<span class="txt '+CLS[answerField]+'"'+(answerField==='hanzi'?' lang="zh-Hans"':'')+'>'+esc(c[answerField])+'</span>'
+                  + '<span class="tag"></span>';
+    btn.addEventListener('click', ()=>handleAnswer(btn, c, w));
+    li.appendChild(btn);
+    ansBox.appendChild(li);
+  });
+}
+
+function handleAnswer(btn, choice, w){
+  if(quiz.answered) return;
+  quiz.answered = true;
+  const correct = choice.num === w.num;
+
+  btn.classList.add('picked');
+  document.querySelectorAll('#answers .ans').forEach(b=>{
+    b.classList.add('disabled');
+    if(Number(b.dataset.num) === w.num){
+      b.classList.add('correct');
+      b.querySelector('.tag').textContent = '정답';
+    }
+  });
+  if(correct){
+    quiz.score++;
+    document.getElementById('qScore').textContent = quiz.score;
+  } else {
+    btn.classList.add('wrong');
+    btn.querySelector('.tag').textContent = '오답';
+    quiz.wrong.push(w);
+  }
+  document.getElementById('qNo').classList.add(correct ? 'ok' : 'ng');
+
+  // 정답 확인 후 한자 · 병음 · 뜻 모두 보여주기
+  document.getElementById('qSub').innerHTML = hzHtml(w)+' ('+pyHtml(w)+') — '+koHtml(w);
+  document.getElementById('explain').classList.remove('hidden');
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = (quiz.idx+1 < quiz.list.length) ? '다음 문항' : '채점 결과 보기';
+  nextBtn.classList.remove('hidden');
+  // 작은 화면에서 '다음 문항' 단추가 화면 밖이면 보이게 살짝 내리기
+  const r = nextBtn.getBoundingClientRect();
+  if(r.bottom > window.innerHeight) window.scrollBy({top:r.bottom - window.innerHeight + 12, behavior:'smooth'});
+}
+
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  quiz.idx++;
+  if(quiz.idx < quiz.list.length){
+    renderQuestion();
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    showResult();
+  }
+});
+
+function wordRow(w, n){
+  return '<tr><td class="n">'+n+'</td>'
+       + '<td class="zh'+([...w.hanzi].length>5?' long':'')+'" lang="zh-Hans">'+esc(w.hanzi)+(w.added==='hanzi'?STAR:'')+'</td>'
+       + '<td class="py">'+esc(w.pinyin)+(w.added==='pinyin'?STAR:'')+'</td>'
+       + '<td class="ko">'+esc(w.korean)+'</td></tr>';
+}
+
+function showResult(){
+  show('result');
+  const total = quiz.list.length;
+  const ok = quiz.score;
+  const no = total - ok;
+  const pct = Math.round((ok/total)*100);
+
+  document.getElementById('rScope').textContent = quiz.scope;
+  document.getElementById('rTotal').textContent = total;
+  document.getElementById('rOk').textContent = ok;
+  document.getElementById('rNo').textContent = no;
+  document.getElementById('rPct').textContent = pct+'%';
+
+  let msg;
+  if(pct===100)     msg='전 문항 정답입니다. 훌륭합니다.';
+  else if(pct>=80)  msg='우수합니다. 아래 오답 어휘만 다시 확인하십시오.';
+  else if(pct>=60)  msg='보통입니다. 오답 어휘를 복습한 뒤 다시 응시하십시오.';
+  else              msg='복습이 필요합니다. 어휘 목록을 먼저 학습한 뒤 다시 응시하십시오.';
+  document.getElementById('rMsg').textContent = msg;
+
+  const seen = new Set();
+  const wrong = quiz.wrong.filter(w=>{ if(seen.has(w.num)) return false; seen.add(w.num); return true; });
+  document.getElementById('wrongBtn').classList.toggle('hidden', wrong.length===0);
+  document.getElementById('reviewBox').classList.toggle('hidden', wrong.length===0);
+  document.getElementById('reviewList').innerHTML = wrong.map((w,i)=>wordRow(w, i+1)).join('');
+}
+
+// ---------- 어휘 목록 ----------
+function showList(){
+  document.getElementById('wordList').innerHTML = CATS.map(c=>{
+    const ws = WORDS.filter(w=>w.cat===c);
+    return '<h2 class="h">'+esc(catLabel(c))+' <small>('+ws.length+'개)</small></h2>'
+         + '<table class="grid words"><colgroup><col class="c-n"><col class="c-zh"><col class="c-py"><col class="c-ko"></colgroup>'
+         + '<thead><tr><th>번호</th><th>간화자</th><th>한어병음</th><th>뜻</th></tr></thead><tbody>'
+         + ws.map(w=>wordRow(w, w.num)).join('')
+         + '</tbody></table>';
+  }).join('');
+  show('list');
+}
+
+// ---------- 단추 연결 ----------
+function goHome(){ show('start'); }
+document.getElementById('startBtn').addEventListener('click', startQuiz);
+document.getElementById('retryBtn').addEventListener('click', startQuiz);
+document.getElementById('wrongBtn').addEventListener('click', startWrongQuiz);
+document.getElementById('againBtn').addEventListener('click', goHome);
+document.getElementById('listBtn').addEventListener('click', showList);
+document.getElementById('listToQuizBtn').addEventListener('click', goHome);
+homeBtn.addEventListener('click', goHome);
+</script>
+</body>
+</html>
