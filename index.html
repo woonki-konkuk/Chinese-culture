@@ -81,7 +81,7 @@
   table.words col.c-n{width:8%;} table.words col.c-zh{width:24%;}
   table.words col.c-py{width:30%;} table.words col.c-ko{width:38%;}
   table.words td{font-size:14.5px;vertical-align:middle;overflow-wrap:anywhere;}
-  table.words td.n{text-align:center;font-family:var(--latin);font-size:12.5px;color:var(--ink-2);}
+  table.words td.n{text-align:center;font-family:var(--latin);font-size:12.5px;color:var(--ink-2);white-space:nowrap;}
   table.words td.zh{font-size:18px;white-space:nowrap;}
   table.words td.py{font-size:14.5px;}
   table.score td{text-align:center;font-family:var(--latin);font-size:20px;font-weight:600;padding:9px 6px;}
@@ -194,6 +194,7 @@
     .title.small{font-size:19px;}
     table.grid th,table.grid td{padding:6px 6px;}
     table.words td{font-size:13.5px;}
+    table.words td.n{padding-left:2px;padding-right:2px;}   /* 세 자리 번호가 한 줄에 들어가게 */
     table.words col.c-n{width:10%;} table.words col.c-zh{width:26%;}
     table.words col.c-py{width:30%;} table.words col.c-ko{width:34%;}
     table.words td.zh{font-size:16px;white-space:normal;}
@@ -209,8 +210,7 @@
     .page-body{padding-bottom:16px;}
     .title{margin-bottom:12px;}
     #startScreen .subtitle{display:none;}
-    table.info th,table.info td{padding:5px 7px;}
-    table.info tr.info-2{display:none;}
+    table.info{display:none;}          /* 과목 · 어휘 수는 머리글과 '전체 N개' 칸에 이미 나옴 */
     .opt.lesson .cnt{display:none;}   /* 단원 이름이 한 줄에 들어가게 (개수는 세부 범위 화면에 나옴) */
     .h{margin:17px 0 8px;}
     .opt{padding:8px 9px;}
@@ -505,39 +505,102 @@ const WORDS = [
   {"num": 158, "hanzi": "九", "pinyin": "jiǔ", "korean": "9, 아홉", "cat": "제3과 명절·기념일", "sub": "날짜·숫자"},
   {"num": 159, "hanzi": "十", "pinyin": "shí", "korean": "10, 열", "cat": "제3과 명절·기념일", "sub": "날짜·숫자"},
   {"num": 160, "hanzi": "京剧", "pinyin": "jīngjù", "korean": "경극(베이징의 전통극)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
-  {"num": 161, "hanzi": "北京", "pinyin": "Běijīng", "korean": "베이징(북경)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 162, "hanzi": "生", "pinyin": "shēng", "korean": "생(성년 남성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 163, "hanzi": "旦", "pinyin": "dàn", "korean": "단(여성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 164, "hanzi": "净", "pinyin": "jìng", "korean": "정(화려하게 분장한 남성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 165, "hanzi": "丑", "pinyin": "chǒu", "korean": "축(주인공을 돋보이게 하는 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 166, "hanzi": "梅兰芳", "pinyin": "Méi Lánfāng", "korean": "매란방(남자 경극 배우)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 167, "hanzi": "变脸", "pinyin": "biànliǎn", "korean": "변검(순식간에 가면 바꾸기)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
-  {"num": 168, "hanzi": "川剧", "pinyin": "chuānjù", "korean": "천극(쓰촨 지방 전통극)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
-  {"num": 169, "hanzi": "脸谱", "pinyin": "liǎnpǔ", "korean": "검보(얼굴을 상징하는 가면)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
-  {"num": 170, "hanzi": "皮影戏", "pinyin": "píyǐngxì", "korean": "피영희(그림자 인형극)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
-  {"num": 171, "hanzi": "剪纸", "pinyin": "jiǎnzhǐ", "korean": "전지(종이 오리기 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 172, "hanzi": "蝠", "pinyin": "fú", "korean": "박쥐(복과 발음 같음)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 173, "hanzi": "余", "pinyin": "yú", "korean": "여유(넉넉함)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 174, "hanzi": "鱼", "pinyin": "yú", "korean": "물고기", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 175, "hanzi": "中国结", "pinyin": "zhōngguójié", "korean": "매듭(중국 전통 매듭 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 176, "hanzi": "书法", "pinyin": "shūfǎ", "korean": "서예", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 177, "hanzi": "篆书", "pinyin": "zhuànshū", "korean": "전서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
-  {"num": 178, "hanzi": "隶书", "pinyin": "lìshū", "korean": "예서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
-  {"num": 179, "hanzi": "草书", "pinyin": "cǎoshū", "korean": "초서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
-  {"num": 180, "hanzi": "行书", "pinyin": "xíngshū", "korean": "행서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
-  {"num": 181, "hanzi": "楷书", "pinyin": "kǎishū", "korean": "해서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
-  {"num": 182, "hanzi": "糖画", "pinyin": "táng huà", "korean": "탕화(설탕 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 183, "hanzi": "茶艺", "pinyin": "cháyì", "korean": "차 기예(긴 주전자로 차 따르기)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 184, "hanzi": "内画", "pinyin": "nèihuà", "korean": "내화(병 안쪽에 그린 그림)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
-  {"num": 185, "hanzi": "将来", "pinyin": "jiānglái", "korean": "나중에, 미래", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 186, "hanzi": "当", "pinyin": "dāng", "korean": "되다", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 187, "hanzi": "医生", "pinyin": "yīshēng", "korean": "의사", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 188, "hanzi": "汉语", "pinyin": "Hànyǔ", "korean": "중국어", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 189, "hanzi": "公司职员", "pinyin": "gōngsī zhíyuán", "korean": "회사원", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 190, "hanzi": "公务员", "pinyin": "gōngwùyuán", "korean": "공무원", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 191, "hanzi": "警察", "pinyin": "jǐngchá", "korean": "경찰", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 192, "hanzi": "消防员", "pinyin": "xiāofángyuán", "korean": "소방관", "cat": "제4과 전통 예술", "sub": "장래 희망"},
-  {"num": 193, "hanzi": "护士", "pinyin": "hùshi", "korean": "간호사", "cat": "제4과 전통 예술", "sub": "장래 희망"}
+  {"num": 161, "hanzi": "生", "pinyin": "shēng", "korean": "생(성년 남성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 162, "hanzi": "旦", "pinyin": "dàn", "korean": "단(여성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 163, "hanzi": "净", "pinyin": "jìng", "korean": "정(화려하게 분장한 남성 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 164, "hanzi": "丑", "pinyin": "chǒu", "korean": "축(주인공을 돋보이게 하는 역)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 165, "hanzi": "梅兰芳", "pinyin": "Méi Lánfāng", "korean": "매란방(남자 경극 배우)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 166, "hanzi": "变脸", "pinyin": "biànliǎn", "korean": "변검(순식간에 가면 바꾸기)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
+  {"num": 167, "hanzi": "川剧", "pinyin": "chuānjù", "korean": "천극(쓰촨 지방 전통극)", "cat": "제4과 전통 예술", "sub": "공연 예술", "added": "pinyin"},
+  {"num": 168, "hanzi": "脸谱", "pinyin": "liǎnpǔ", "korean": "검보(얼굴을 상징하는 가면)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
+  {"num": 169, "hanzi": "皮影戏", "pinyin": "píyǐngxì", "korean": "피영희(그림자 인형극)", "cat": "제4과 전통 예술", "sub": "공연 예술"},
+  {"num": 170, "hanzi": "剪纸", "pinyin": "jiǎnzhǐ", "korean": "전지(종이 오리기 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 171, "hanzi": "蝠", "pinyin": "fú", "korean": "박쥐(복과 발음 같음)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 172, "hanzi": "余", "pinyin": "yú", "korean": "여유(넉넉함)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 173, "hanzi": "鱼", "pinyin": "yú", "korean": "물고기", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 174, "hanzi": "中国结", "pinyin": "zhōngguójié", "korean": "매듭(중국 전통 매듭 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 175, "hanzi": "书法", "pinyin": "shūfǎ", "korean": "서예", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 176, "hanzi": "篆书", "pinyin": "zhuànshū", "korean": "전서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
+  {"num": 177, "hanzi": "隶书", "pinyin": "lìshū", "korean": "예서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
+  {"num": 178, "hanzi": "草书", "pinyin": "cǎoshū", "korean": "초서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
+  {"num": 179, "hanzi": "行书", "pinyin": "xíngshū", "korean": "행서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
+  {"num": 180, "hanzi": "楷书", "pinyin": "kǎishū", "korean": "해서(서체)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술", "added": "pinyin"},
+  {"num": 181, "hanzi": "糖画", "pinyin": "táng huà", "korean": "탕화(설탕 공예)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 182, "hanzi": "茶艺", "pinyin": "cháyì", "korean": "차 기예(긴 주전자로 차 따르기)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 183, "hanzi": "内画", "pinyin": "nèihuà", "korean": "내화(병 안쪽에 그린 그림)", "cat": "제4과 전통 예술", "sub": "공예·기타 예술"},
+  {"num": 184, "hanzi": "将来", "pinyin": "jiānglái", "korean": "나중에, 미래", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 185, "hanzi": "当", "pinyin": "dāng", "korean": "되다", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 186, "hanzi": "医生", "pinyin": "yīshēng", "korean": "의사", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 187, "hanzi": "公司职员", "pinyin": "gōngsī zhíyuán", "korean": "회사원", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 188, "hanzi": "公务员", "pinyin": "gōngwùyuán", "korean": "공무원", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 189, "hanzi": "警察", "pinyin": "jǐngchá", "korean": "경찰", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 190, "hanzi": "消防员", "pinyin": "xiāofángyuán", "korean": "소방관", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 191, "hanzi": "护士", "pinyin": "hùshi", "korean": "간호사", "cat": "제4과 전통 예술", "sub": "장래 희망"},
+  {"num": 192, "hanzi": "爱好", "pinyin": "àihào", "korean": "취미", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 193, "hanzi": "跳舞", "pinyin": "tiàowǔ", "korean": "춤추기", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 194, "hanzi": "画画儿", "pinyin": "huà huàr", "korean": "그림 그리기", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 195, "hanzi": "看电影", "pinyin": "kàn diànyǐng", "korean": "영화 감상", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 196, "hanzi": "拍照", "pinyin": "pāizhào", "korean": "사진 찍기", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 197, "hanzi": "唱歌", "pinyin": "chàng gē", "korean": "노래 부르기", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 198, "hanzi": "看书", "pinyin": "kàn shū", "korean": "독서", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 199, "hanzi": "听音乐", "pinyin": "tīng yīnyuè", "korean": "음악 감상", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 200, "hanzi": "玩游戏", "pinyin": "wán yóuxì", "korean": "게임", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 201, "hanzi": "旅行", "pinyin": "lǚxíng", "korean": "여행", "cat": "제4과 전통 예술", "sub": "취미"},
+  {"num": 202, "hanzi": "汉语", "pinyin": "Hànyǔ", "korean": "한어(한족의 언어, 중국어)", "cat": "제5과 언어와 문자", "sub": "중국어와 방언"},
+  {"num": 203, "hanzi": "普通话", "pinyin": "pǔtōnghuà", "korean": "푸퉁화(한어의 표준어)", "cat": "제5과 언어와 문자", "sub": "중국어와 방언"},
+  {"num": 204, "hanzi": "你好", "pinyin": "nǐ hǎo", "korean": "안녕하세요", "cat": "제5과 언어와 문자", "sub": "중국어와 방언", "added": "pinyin"},
+  {"num": 205, "hanzi": "甲骨文", "pinyin": "jiǎgǔwén", "korean": "갑골문(거북 등딱지·뼈에 새긴 글자)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 206, "hanzi": "甲", "pinyin": "jiǎ", "korean": "갑(거북의 등딱지)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 207, "hanzi": "骨", "pinyin": "gǔ", "korean": "골(짐승의 뼈)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 208, "hanzi": "东巴文", "pinyin": "Dōngbāwén", "korean": "동파문(나시족의 상형 문자)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 209, "hanzi": "六书", "pinyin": "liùshū", "korean": "육서(한자 구조·사용의 6원리)", "cat": "제5과 언어와 문자", "sub": "한자와 병음"},
+  {"num": 210, "hanzi": "象形", "pinyin": "xiàngxíng", "korean": "상형(사물 모양을 본뜬 글자)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 211, "hanzi": "指事", "pinyin": "zhǐshì", "korean": "지사(추상적 기호로 만든 글자)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 212, "hanzi": "会意", "pinyin": "huìyì", "korean": "회의(글자를 합해 새 뜻을 만듦)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 213, "hanzi": "形声", "pinyin": "xíngshēng", "korean": "형성(뜻 글자+소리 글자로 만듦)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 214, "hanzi": "转注", "pinyin": "zhuǎnzhù", "korean": "전주(관련된 뜻으로 돌려 씀)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 215, "hanzi": "乐", "pinyin": "yuè / lè / yào", "korean": "풍류 악·즐길 락·좋아할 요", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 216, "hanzi": "假借", "pinyin": "jiǎjiè", "korean": "가차(뜻과 상관없이 음만 빌림)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 217, "hanzi": "亚细亚", "pinyin": "Yàxìyà", "korean": "아시아(아세아)", "cat": "제5과 언어와 문자", "sub": "한자와 병음", "added": "pinyin"},
+  {"num": 218, "hanzi": "汉语拼音", "pinyin": "Hànyǔ Pīnyīn", "korean": "한어병음(중국어 발음 표기법)", "cat": "제5과 언어와 문자", "sub": "한자와 병음"},
+  {"num": 219, "hanzi": "会", "pinyin": "huì", "korean": "~할 줄 안다", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 220, "hanzi": "说", "pinyin": "shuō", "korean": "말하다", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 221, "hanzi": "西班牙语", "pinyin": "Xībānyáyǔ", "korean": "스페인어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 222, "hanzi": "吗", "pinyin": "ma", "korean": "~입니까?", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 223, "hanzi": "一点儿", "pinyin": "yìdiǎnr", "korean": "약간", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 224, "hanzi": "教", "pinyin": "jiāo", "korean": "가르치다", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 225, "hanzi": "吧", "pinyin": "ba", "korean": "어기조사(권유·제안)", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 226, "hanzi": "没", "pinyin": "méi", "korean": "없다", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 227, "hanzi": "问题", "pinyin": "wèntí", "korean": "문제", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 228, "hanzi": "教教", "pinyin": "jiāojiao", "korean": "좀 가르쳐 줘", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 229, "hanzi": "看看", "pinyin": "kànkan", "korean": "좀 봐 봐", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 230, "hanzi": "韩语", "pinyin": "Hányǔ", "korean": "한국어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 231, "hanzi": "日语", "pinyin": "Rìyǔ", "korean": "일본어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 232, "hanzi": "英语", "pinyin": "Yīngyǔ", "korean": "영어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 233, "hanzi": "法语", "pinyin": "Fǎyǔ", "korean": "프랑스어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 234, "hanzi": "德语", "pinyin": "Déyǔ", "korean": "독일어", "cat": "제5과 언어와 문자", "sub": "외국어"},
+  {"num": 235, "hanzi": "省", "pinyin": "shěng", "korean": "성(행정 구역 단위)", "cat": "제6과 지역과 민족", "sub": "행정 구역", "added": "pinyin"},
+  {"num": 236, "hanzi": "西藏自治区", "pinyin": "Xīzàng Zìzhìqū", "korean": "시짱 자치구(티베트 자치구)", "cat": "제6과 지역과 민족", "sub": "행정 구역"},
+  {"num": 237, "hanzi": "北京", "pinyin": "Běijīng", "korean": "베이징(북경)", "cat": "제6과 지역과 민족", "sub": "행정 구역"},
+  {"num": 238, "hanzi": "天津", "pinyin": "Tiānjīn", "korean": "톈진(천진)", "cat": "제6과 지역과 민족", "sub": "행정 구역"},
+  {"num": 239, "hanzi": "上海", "pinyin": "Shànghǎi", "korean": "상하이(상해)", "cat": "제6과 지역과 민족", "sub": "행정 구역"},
+  {"num": 240, "hanzi": "重庆", "pinyin": "Chóngqìng", "korean": "충칭(중경)", "cat": "제6과 지역과 민족", "sub": "행정 구역"},
+  {"num": 241, "hanzi": "山西", "pinyin": "Shānxī", "korean": "산시성(산서성)", "cat": "제6과 지역과 민족", "sub": "행정 구역", "added": "pinyin"},
+  {"num": 242, "hanzi": "陕西", "pinyin": "Shǎnxī", "korean": "산시성(섬서성)", "cat": "제6과 지역과 민족", "sub": "행정 구역", "added": "pinyin"},
+  {"num": 243, "hanzi": "黄河", "pinyin": "Huáng Hé", "korean": "황허(황하)", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 244, "hanzi": "只有一个中国", "pinyin": "zhǐ yǒu yí ge Zhōngguó", "korean": "단 하나의 중국(민족 정책)", "cat": "제6과 지역과 민족", "sub": "민족", "added": "pinyin"},
+  {"num": 245, "hanzi": "朝鲜族", "pinyin": "Cháoxiǎnzú", "korean": "조선족", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 246, "hanzi": "维吾尔族", "pinyin": "Wéiwú'ěrzú", "korean": "위구르족", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 247, "hanzi": "壮族", "pinyin": "Zhuàngzú", "korean": "좡족", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 248, "hanzi": "纳西族", "pinyin": "Nàxīzú", "korean": "나시족", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 249, "hanzi": "拉祜族", "pinyin": "Lāhùzú", "korean": "라후족", "cat": "제6과 지역과 민족", "sub": "민족"},
+  {"num": 250, "hanzi": "这", "pinyin": "zhè", "korean": "이(이것)", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 251, "hanzi": "是", "pinyin": "shì", "korean": "~이다", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 252, "hanzi": "谁", "pinyin": "shéi", "korean": "누구", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 253, "hanzi": "的", "pinyin": "de", "korean": "~의", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 254, "hanzi": "朋友", "pinyin": "péngyou", "korean": "친구", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 255, "hanzi": "他", "pinyin": "tā", "korean": "그", "cat": "제6과 지역과 민족", "sub": "친구 소개"},
+  {"num": 256, "hanzi": "中国人", "pinyin": "Zhōngguórén", "korean": "중국인", "cat": "제6과 지역과 민족", "sub": "친구 소개"}
 ];
 
 // ---------- 범위: 단원(cat) → 세부 범위(sub) ----------
@@ -731,7 +794,16 @@ function pickDistractors(w, answerField, mode){
     return s;
   };
   const sorted = cands.map(x=>({s:score(x),x})).sort((a,b)=>b.s-a.s).map(o=>o.x);
-  return shuffle(sorted.slice(0,8)).slice(0,3);
+  // 오답 보기끼리도 같은 글자 · 같은 발음이 겹치지 않게 (예: 倒福 · 到福 모두 dào fú)
+  const key = x=> answerField==='pinyin' ? plainPy(x.pinyin) : x[answerField];
+  const picked = [], seen = new Set();
+  for(const x of shuffle(sorted.slice(0,8)).concat(sorted.slice(8))){
+    const k = key(x);
+    if(seen.has(k)) continue;
+    seen.add(k); picked.push(x);
+    if(picked.length===3) break;
+  }
+  return picked;
 }
 
 const STEM = {
